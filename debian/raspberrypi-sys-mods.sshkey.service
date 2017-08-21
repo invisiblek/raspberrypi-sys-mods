@@ -1,0 +1,14 @@
+[Unit]
+Description=Append ssh keys contained in /boot/ssh to pi's ~/.ssh/authorized_keys and disable password login
+ConditionFileNotEmpty=/boot/ssh{,.txt}
+After=regenerate_ssh_host_keys.service
+
+[Service]
+Type=oneshot
+ExecStartPre=-/bin/sh -c "mkdir -pm 700 /home/pi/.ssh/ && touch /home/pi/.ssh/authorized_keys && chmod 600 /home/pi/.ssh/authorized_keys && chown -R pi:pi /home/pi/.ssh/"
+ExecStart=/bin/sh -c "cat /boot/ssh /boot/ssh.txt >> /home/pi/.ssh/authorized_keys"
+ExecStartPost=/bin/sh -c "sed -i 's/#PasswordAuthentication yes/PasswordAuthentication no/' /etc/ssh/sshd_config"
+
+[Install]
+WantedBy=multi-user.target
+
